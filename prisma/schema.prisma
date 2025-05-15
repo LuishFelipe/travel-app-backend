@@ -1,0 +1,148 @@
+generator client {
+  provider = "prisma-client-js"
+  output   = "../generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Connection {
+  id String @id @default(uuid())
+  followUserId String
+  followingUserId String
+  dateFollow DateTime @default(now())
+  state FollowState
+
+  followUser User @relation("FollowersRelation", fields: [followUserId], references: [id])
+  followingUser User @relation("FollowingRelation", fields: [followingUserId], references: [id])
+}
+
+enum FollowState {
+  pending
+  accepted
+  rejected
+}
+
+model Location {
+  id String @id @default(uuid())
+  country String
+  region String
+  city String
+  description String
+
+  posts PostLocation[]
+}
+
+model PostLocation {
+  id String @id @default(uuid())
+  postId String
+  locationId String
+  createdAt DateTime @default(now())
+
+  post Post @relation(fields: [postId], references: [id])
+  location Location @relation(fields: [locationId], references: [id])
+}
+
+model PostComponent {
+  id String @id @default(uuid())
+  order Int
+  postId  String
+
+  photo Photo?
+  video Video?
+  text Text?
+
+  post Post @relation(fields: [postId], references: [id])
+}
+
+model Photo {
+  id String @id @default(uuid())
+  url String
+  caption String
+  postComponentId String  @unique
+
+  postComponent PostComponent @relation(fields: [postComponentId], references: [id])
+}
+
+model Video {
+  id String @id @default(uuid())
+  url String
+  duration Float
+  postComponentId String  @unique
+
+  postComponent PostComponent @relation(fields: [postComponentId], references: [id])
+}
+
+model Text {
+  id String @id @default(uuid())
+  content String
+  postComponentId String  @unique
+
+  postComponent PostComponent @relation(fields: [postComponentId], references: [id])
+}
+
+model Tag {
+  id String @id @default(uuid())
+  name String @unique
+
+  postTags PostTag[]
+}
+
+model PostTag {
+  id String @id @default(uuid())
+  postId String
+  tagId String
+  createdAt DateTime @default(now())
+
+  post Post @relation(fields: [postId], references: [id])
+  tag Tag @relation(fields: [tagId], references: [id])
+
+  @@unique([postId, tagId])
+}
+
+model Comment {
+  id String @id @default(uuid())
+  content String
+  createdAt DateTime @default(now())
+  userId String
+  postId String
+
+  user User @relation(fields: [userId], references: [id])
+  post Post @relation(fields: [postId], references: [id])
+}
+
+model Post {
+  id String @id @default(uuid())
+  description String
+  privacity Boolean
+  likeNumber Int
+  createdAt DateTime @default(now())
+  userId String
+
+  locations PostLocation[]
+  postComponents PostComponent[]
+  postTags PostTag[]
+  comments Comment[]
+  user User @relation(fields: [userId], references: [id])
+}
+
+model User {
+  id String @id @default(uuid())
+  nickname String
+  username String   @unique
+  email String   @unique
+  password String
+  phone String
+  photoProfile String
+  description String
+  privacity Boolean  @default(false)
+  createdAt DateTime @default(now())
+
+  posts Post[]
+  comments Comment[]
+  followers Connection[] @relation("FollowersRelation")
+  following Connection[] @relation("FollowingRelation")
+}
+
