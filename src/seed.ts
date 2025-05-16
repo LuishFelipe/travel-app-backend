@@ -1,27 +1,28 @@
 import { PrismaClient } from '../generated/prisma';
-
+import argon2 from 'argon2'
 const prisma = new PrismaClient();
 
 async function main() {
   // Criando usuários
+  const hashAna = await argon2.hash('senha123');
   const ana = await prisma.user.create({
     data: {
       nickname: 'Ana',
       username: 'ana123',
       email: 'ana@example.com',
-      password: 'senha123',
+      password: hashAna,
       phone: '11999999999',
       photoProfile: 'https://example.com/foto-ana.jpg',
       description: 'Amante da natureza',
     },
   });
-
+  const hashBruno = await argon2.hash('senha456');
   const bruno = await prisma.user.create({
     data: {
       nickname: 'Bruno',
       username: 'bruno_rock',
       email: 'bruno@example.com',
-      password: 'senha456',
+      password: hashBruno,
       phone: '11888888888',
       photoProfile: 'https://example.com/foto-bruno.jpg',
       description: 'Aventureiro e mochileiro',

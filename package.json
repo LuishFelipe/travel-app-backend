@@ -3,9 +3,10 @@
   "version": "1.0.0",
   "main": "main.js",
   "scripts": {
+    "dev": "tsx watch src/server.ts"
   },
   "prisma": {
-    "seed": "npx tsx prisma/seed.ts"
+    "seed": "npx tsx src/seed.ts"
   },
   "keywords": [],
   "author": "",
@@ -13,10 +14,20 @@
   "description": "",
   "dependencies": {
     "@prisma/client": "^6.7.0",
+    "argon2": "^0.43.0",
+    "express": "^5.1.0",
+    "jsonwebtoken": "^9.0.2",
+    "swagger-jsdoc": "^6.2.8",
+    "swagger-ui-express": "^5.0.1",
     "uuid": "^11.1.0"
   },
   "devDependencies": {
+    "@types/argon2": "^0.14.1",
+    "@types/express": "^5.0.1",
+    "@types/jsonwebtoken": "^9.0.9",
     "@types/node": "^22.15.15",
+    "@types/swagger-jsdoc": "^6.0.4",
+    "@types/swagger-ui-express": "^4.1.8",
     "@types/uuid": "^10.0.0",
     "prisma": "^6.7.0",
     "ts-node": "^10.9.2",
