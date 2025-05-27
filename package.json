@@ -3,7 +3,9 @@
   "version": "1.0.0",
   "main": "main.js",
   "scripts": {
-    "dev": "tsx watch src/server.ts"
+    "dev": "tsx watch src/server.ts",
+    "docker:start": "docker compose start",
+    "docker:stop": "docker compose stop"
   },
   "prisma": {
     "seed": "npx tsx src/seed.ts"
