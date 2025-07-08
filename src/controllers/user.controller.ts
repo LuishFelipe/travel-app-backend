@@ -16,6 +16,18 @@ export const userController = {
     return res.status(201).json(user);
   },
 
+  async me(req: Request, res: Response) {
+    if(!req.user) {
+      return res.status(401).json({ error: "Usuário não autenticado" });
+    }
+    const user = await userRepository.getUserById(req.user.id);
+    if (!user) {
+      return res.status(404).json({ error: "Usuário não encontrado" });
+    }
+    const { password, ...userData } = user;
+    return res.json(userData);
+  },
+
   async findAll(req: Request, res: Response) {
     const users = await userRepository.getAllUsers();
     res.json(users);

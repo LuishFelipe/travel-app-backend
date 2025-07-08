@@ -7,13 +7,14 @@ export const postController = {
       return res.status(401).json({ error: "Usuário não autenticado." });
     }
 
-    const { description, privacity, components } = req.body;
+    const { description, privacity, components, locations } = req.body;
 
     const post = await postRepository.createPost({
       description,
       privacity,
       userId: req.user.id,
       components,
+      locations,
     });
 
     return res.status(201).json(post);
