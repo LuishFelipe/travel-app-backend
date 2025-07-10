@@ -1,5 +1,6 @@
 import { PrismaClient, Post } from "../../generated/prisma";
 import { locationRepository } from "./location.repository";
+import { tagRepository } from "./tag.repository";
 
 const prisma = new PrismaClient();
 
@@ -22,6 +23,7 @@ interface CreatePostInput {
   userId: string;
   components: ComponentInput[];
   locations?: LocationInput[];
+  tags?: string[];
 }
 
 interface UpdatePostInput {
@@ -32,7 +34,7 @@ interface UpdatePostInput {
 }
 
 export const postRepository = {
-  async createPost({ description, privacity, userId, components, locations }: CreatePostInput) {
+  async createPost({ description, privacity, userId, components, locations, tags }: CreatePostInput) {
     return prisma.$transaction(async (tx) => {
       const post = await tx.post.create({
         data: {
@@ -54,10 +56,8 @@ export const postRepository = {
                 locationId: existingLocation.id,
               },
             });
-            console.log("Creating Postlocation ", existingLocation.id);
           } else {
             const newLocation = await locationRepository.createLocation(location);
-            console.log("Creating Postlocation ", newLocation.id);
             await tx.postLocation.create({
               data: {
                 postId: post.id,
@@ -113,6 +113,19 @@ export const postRepository = {
         }
       }
 
+      if (tags && tags.length > 0) {
+        for (const tagName of tags) {
+          const tag = await tagRepository.findOrCreate(tagName);
+          console.log(`Tag found or created: ${tag.name}`);
+          await tx.postTag.create({
+            data: {
+              postId: post.id,
+              tagId: tag.id,
+            },
+          });
+        }
+      }
+
       return post;
     });
   },
@@ -120,12 +133,13 @@ export const postRepository = {
   async getAllPosts(userId: string): Promise<Post[]> {
     return await prisma.post.findMany({
       where: { userId },
+      orderBy: { createdAt: 'desc' },
       include: {
+        user: { select: { username: true } }, // traz username do autor
         postComponents: {
+          orderBy: { order: 'asc' }, // garante ordem dos components
           include: {
             text: true,
-            photo: true,
-            video: true,
           },
         },
       },
@@ -141,6 +155,40 @@ export const postRepository = {
             text: true,
             photo: true,
             video: true,
+          },
+        },
+      },
+    });
+  },
+
+  async getPostByTagName(tagName: string) {
+    return await prisma.post.findMany({
+      where: {
+        postTags: {
+          some: {
+            tag: {
+              name: tagName,
+            },
+          },
+        },
+      },
+      include: {
+        user: true,
+        postComponents: {
+          include: {
+            text: true,
+            photo: true,
+            video: true,
+          },
+        },
+        locations: {
+          include: {
+            location: true,
+          },
+        },
+        postTags: {
+          include: {
+            tag: true,
           },
         },
       },
@@ -245,6 +293,8 @@ export const postRepository = {
   async deletePost(postId: string, userId: string): Promise<Post | null> {
     const post = await prisma.post.findFirst({ where: { id: postId, userId } });
     if (!post) return null;
+    await prisma.postLocation.deleteMany({ where: { postId } });
+    await prisma.postTag.deleteMany({ where: { postId } });
 
     return await prisma.post.delete({ where: { id: postId } });
   },

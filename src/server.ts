@@ -2,6 +2,7 @@ import express from "express";
 import userRoutes from "./routes/user.routes"
 import postRoutes from "./routes/post.routes"
 import locationRoutes from "./routes/location.routes";
+import commentRoutes from "./routes/comment.routes"
 import authRoutes from "./routes/auth.routes"
 import swaggerJSDoc from "swagger-jsdoc";
 import swaggerUi from "swagger-ui-express"
@@ -48,6 +49,7 @@ app.use('/docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec));
 app.use('/users', userRoutes);
 app.use('/posts', postRoutes);
 app.use('/locations', authMiddleware, locationRoutes); 
+app.use('/comments', commentRoutes);
 app.use('/auth', authRoutes);
 
 app.get("/", (req, res) => {

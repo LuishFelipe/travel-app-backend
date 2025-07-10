@@ -46,6 +46,10 @@ export const userController = {
     const { id } = req.params;
     const { password, ...updateData } = req.body;
 
+    if (!req.user || req.user.id !== id) {
+      return res.status(403).json({ error: 'Ação não permitida.' });
+    }
+
     if (password) {
       updateData.password = await argon2.hash(password);
     }
@@ -60,11 +64,18 @@ export const userController = {
   },
 
   async remove(req: Request, res: Response) {
-    try {
-      await userRepository.deleteUser(req.params.id);
-      res.status(204).send();
-    } catch (e) {
-      res.status(404).json({ message: 'User not found' });
+    const { id } = req.params;
+  
+    if (!req.user || req.user.id !== id) {
+      return res.status(403).json({ error: 'Ação não permitida.' });
     }
+  
+    const deletedUser = await userRepository.deleteUser(id);
+  
+    if (!deletedUser) {
+      return res.status(404).json({ error: 'Usuário não encontrado' });
+    }
+  
+    return res.status(204).send();
   }
 };

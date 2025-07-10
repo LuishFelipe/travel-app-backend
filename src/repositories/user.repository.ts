@@ -22,7 +22,10 @@ export const userRepository = {
     });
   },
 
-  deleteUser: async (id: string): Promise<User> => {
+  deleteUser: async (id: string): Promise<User | null> => {
+    const user = await prisma.user.findUnique({ where: { id } });
+    if (!user) return null;
+
     return await prisma.user.delete({ where: { id } });
   }
 };

@@ -7,7 +7,7 @@ export const postController = {
       return res.status(401).json({ error: "Usuário não autenticado." });
     }
 
-    const { description, privacity, components, locations } = req.body;
+    const { description, privacity, components, locations, tags } = req.body;
 
     const post = await postRepository.createPost({
       description,
@@ -15,6 +15,7 @@ export const postController = {
       userId: req.user.id,
       components,
       locations,
+      tags,
     });
 
     return res.status(201).json(post);
@@ -35,6 +36,22 @@ export const postController = {
     if (!post) return res.status(404).json({ error: "Post não encontrado ou não pertence ao usuário." });
 
     res.json(post);
+  },
+
+  async findByTag(req: Request, res: Response) {
+    const { tag } = req.params;
+  
+    try {
+      const posts = await postRepository.getPostByTagName(tag);
+  
+      if (!posts.length) {
+        return res.status(404).json({ message: "Nenhum post encontrado com essa tag." });
+      }
+  
+      return res.json(posts);
+    } catch (error) {
+      return res.status(500).json({ error: "Erro ao buscar posts por tag", details: error });
+    }
   },
 
   async update(req: Request, res: Response) {
